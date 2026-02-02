@@ -1,10 +1,5 @@
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.InkML;
-using OfficeOpenXml;
-using System;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using ValidadorExcel;
 
 namespace AnalisarDados;
@@ -120,7 +115,7 @@ public class Analisador
             {
                 case Constantes.Atividades.SLDL:
                     Console.WriteLine(string.Format(Constantes.Mensagens.PROCESSANDO_ATIVIDADE, Constantes.Atividades.SLDL));
-                    if (arquivosDireitaAtual.Any()) 
+                    if (arquivosDireitaAtual.Any())
                         resultados.AddRange(ProcessarSLDL(arquivosDireitaAtual, Constantes.Lados.DIREITA, dia));
                     if (arquivosEsquerdaAtual.Any())
                         resultados.AddRange(ProcessarSLDL(arquivosEsquerdaAtual, Constantes.Lados.ESQUERDA, dia));
@@ -137,10 +132,10 @@ public class Analisador
                 case Constantes.Atividades.SLLV:
                     Console.WriteLine(string.Format(Constantes.Mensagens.PROCESSANDO_ATIVIDADE, Constantes.Atividades.SLLV));
                     // Implementar processamento de SLLV quando necessário
-                    // if (arquivosDireitaAtual.Any())
-                    //     resultados.AddRange(ProcessarSLLV(arquivosDireitaAtual, Constantes.Lados.DIREITA, dia));
-                    // if (arquivosEsquerdaAtual.Any())
-                    //     resultados.AddRange(ProcessarSLLV(arquivosEsquerdaAtual, Constantes.Lados.ESQUERDA, dia));
+                    if (arquivosDireitaAtual.Any())
+                        resultados.AddRange(ProcessarSLLV(arquivosDireitaAtual, Constantes.Lados.DIREITA, dia));
+                    if (arquivosEsquerdaAtual.Any())
+                        resultados.AddRange(ProcessarSLLV(arquivosEsquerdaAtual, Constantes.Lados.ESQUERDA, dia));
                     break;
             }
         }
@@ -263,17 +258,15 @@ public class Analisador
 
             #region Segundo ponto de corte
 
-            var IndexMaximoValorPelveMarcador = calcanharMarcador.IndexOf(calcanharMarcador.Max());
-
             // pegar somente os valores após o pico
             var valoresDepoisDoMaximoPelve = pelveCinematica
-                .Skip(IndexMaximoValorPelveMarcador + 1)
+                .Skip(pontoCorteCalcanhar + 1)
                 .ToList();
 
             var menorValor = valoresDepoisDoMaximoPelve.Min();
 
             // índice global do menor valor
-            var pontoCortePelve = pelveCinematica.IndexOf(menorValor, IndexMaximoValorPelveMarcador + 1);
+            var pontoCortePelve = pelveCinematica.IndexOf(menorValor, pontoCorteCalcanhar + 1);
 
             Console.WriteLine($"📍 Ponto de corte pelve: {pontoCortePelve}");
 
@@ -443,11 +436,9 @@ public class Analisador
 
             #region Segundo ponto de corte
 
-            var IndexMaximoValorPelveMarcador = calcanharMarcador.IndexOf(calcanharMarcador.Max());
-
             // pegar somente os valores após o pico
             var valoresDepoisDoMaximoPelve = pelveCinematica
-                .Skip(IndexMaximoValorPelveMarcador + 1)
+                .Skip(pontoCorteCalcanhar + 1)
                 .ToList();
 
             if(valoresDepoisDoMaximoPelve.Count == 0)
@@ -459,7 +450,7 @@ public class Analisador
             var menorValor = valoresDepoisDoMaximoPelve.Min();
 
             // índice global do menor valor
-            var pontoCortePelve = pelveCinematica.IndexOf(menorValor, IndexMaximoValorPelveMarcador + 1);
+            var pontoCortePelve = pelveCinematica.IndexOf(menorValor, pontoCorteCalcanhar + 1);
 
             Console.WriteLine($"📍 Ponto de corte pelve: {pontoCortePelve}");
 
@@ -505,6 +496,205 @@ public class Analisador
         }
 
         Console.WriteLine("🏁 Finalizado processamento SLDL.");
+        return resultados;
+    }
+
+    private List<ResultadoAnalise> ProcessarSLLV(List<string> caminhos, string lado, int dia)
+    {
+        Console.WriteLine($"\n📊 Processando {Constantes.Atividades.SLLV} - Lado: {lado}");
+
+        var resultados = new List<ResultadoAnalise>();
+        var ladoDireito = lado == Constantes.Lados.DIREITA;
+
+        if (caminhos == null || caminhos.Count == 0)
+        {
+            Console.WriteLine("⚠️ Nenhum arquivo encontrado para processar SLLV.");
+            return new List<ResultadoAnalise>();
+        }
+
+        Console.WriteLine($"🧾 Total de arquivos encontrados: {caminhos.Count}");
+
+        var arquivoMarcadores = caminhos.FirstOrDefault(f => f.Contains("Marcadores"));
+        var arquivoCinematica = caminhos.FirstOrDefault(f => f.Contains("Cinematica"));
+
+        if (arquivoMarcadores == null || arquivoCinematica == null)
+        {
+            Console.WriteLine("⚠️ Arquivos de Marcadores ou Cinemática não encontrados SLLV SLDL.");
+            return new List<ResultadoAnalise>();
+        }
+
+        using var wbMarcador = new XLWorkbook(arquivoMarcadores);
+        var planilhasMarcador = wbMarcador.Worksheets.ToList();
+
+        using var wbCinematica = new XLWorkbook(arquivoCinematica);
+        var planilhasCinematica = wbCinematica.Worksheets.ToList();
+
+        for (var i = 1; i <= 5; i++)
+        {
+            Console.WriteLine(string.Format(Constantes.Mensagens.ANALISANDO_TENTATIVA, i));
+
+            var planilhaM = planilhasMarcador.FirstOrDefault(f => f.Name.Contains(i.ToString()));
+            var planilhaC = planilhasCinematica.FirstOrDefault(f => f.Name.Contains(i.ToString()));
+
+            if (planilhaC is null || planilhaM is null)
+            {
+                Console.WriteLine(string.Format("Planilhas não encontradas na tentativa {0}", i));
+                continue;
+            }
+
+            Console.WriteLine(Constantes.Mensagens.LENDO_DADOS);
+
+            #region Dados 
+
+            var tempoMarcadores = planilhaM.Column(Constantes.ColunasMarcadores.TEMPO)
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            var aducaoQuadril = planilhaC.Column(ladoDireito ? "I" : "P")
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            var flexaoQuadril = planilhaC.Column(ladoDireito ? "H" : "O")
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            var rotacaoMedialQuadril = planilhaC.Column(ladoDireito ? "J" : "Q")
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            var flexaoJoelho = planilhaC.Column(ladoDireito ? "K" : "R")
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            var calcanharMarcador = planilhaM.Column(ladoDireito ? "BI" : "AZ")
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            var pelveCinematica = planilhaM.Column(ladoDireito ? "BL" : "BO")
+                   .CellsUsed()
+                   .Skip(1)
+                   .Select(c => c.GetValue<double>())
+                   .ToList();
+
+            #endregion Dados 
+
+            Console.WriteLine("🔎 Calculando pontos de corte...");
+
+            #region Primeiro ponto de corte
+
+            int pontoCorteCalcanhar = -1;
+            double limiarCalcanhar = calcanharMarcador.Max() * 0.8;
+
+            int janela = 5;
+
+            for (int ind = 1; ind < calcanharMarcador.Count - 1; ind++)
+            {
+                double valorAtual = calcanharMarcador[ind];
+
+                // 1. Ultrapassa o limiar
+                if (valorAtual <= limiarCalcanhar)
+                    continue;
+
+                // 2. Crescente em relação ao ponto anterior
+                if (valorAtual <= calcanharMarcador[ind - 1])
+                    continue;
+
+                // 3. Verifica se é o maior nos próximos até 5 pontos
+                bool maiorNosProximos = true;
+
+                for (int j = 1; j <= janela && (ind + j) < calcanharMarcador.Count; j++)
+                {
+                    if (valorAtual <= calcanharMarcador[ind + j])
+                    {
+                        maiorNosProximos = false;
+                        break;
+                    }
+                }
+
+                if (maiorNosProximos)
+                {
+                    pontoCorteCalcanhar = ind;
+                    break; // primeiro pico válido
+                }
+            }
+
+
+            #endregion Primeiro ponto de corte
+
+            #region Segundo ponto de corte
+
+            // pegar somente os valores após o pico
+            var valoresDepoisDoMaximoPelve = pelveCinematica
+                .Skip(pontoCorteCalcanhar + 1)
+                .ToList();
+
+            if (valoresDepoisDoMaximoPelve.Count == 0)
+            {
+                Console.WriteLine($"Nenhum ponto de corte da pelve encontrado na tentativa {i}");
+                continue;
+            }
+
+            var menorValor = valoresDepoisDoMaximoPelve.Min();
+
+            // índice global do menor valor
+            var pontoCortePelve = pelveCinematica.IndexOf(menorValor, pontoCorteCalcanhar + 1);
+
+            Console.WriteLine($"📍 Ponto de corte pelve: {pontoCortePelve}");
+
+            #endregion Segundo ponto de corte
+
+            /// Garante que os índices estão dentro dos limites
+            int inicio = Math.Max(0, pontoCorteCalcanhar);
+            int fim = Math.Min(pelveCinematica.Count - 1, pontoCortePelve);
+
+            // Caso os índices estejam invertidos (por segurança)
+            if (fim <= inicio)
+            {
+                Console.WriteLine("⚠️ Intervalo inválido entre pontoCorteCalcanhar e pontoCortePelve. Pulando tentativa...");
+                continue;
+            }
+
+            // === Calcula os máximos entre os pontos de corte ===
+            Console.WriteLine("📊 Calculando máximos entre os pontos de corte...");
+            var maxAducaoQuadril = MaxEntre(aducaoQuadril, inicio, fim);
+            var maxFlexaoQuadril = MaxEntre(flexaoQuadril, inicio, fim);
+            var maxFlexaoJoelho = MaxEntre(flexaoJoelho, inicio, fim);
+            var maxRotacaoMedialQuadril = MaxEntre(rotacaoMedialQuadril, inicio, fim);
+
+            // === Mostra os resultados ===
+            Console.WriteLine(string.Format(Constantes.Mensagens.RESULTADOS_TENTATIVA, i));
+            Console.WriteLine($"   - Máx Aducao Quadril: {maxAducaoQuadril}");
+            Console.WriteLine($"   - Máx Flexao Quadril: {maxFlexaoQuadril}");
+            Console.WriteLine($"   - Máx Rotacao Medial Quadril: {maxRotacaoMedialQuadril}");
+            Console.WriteLine($"   - Máx Flexao Joelho: {maxFlexaoJoelho}");
+
+            var resultado = new ResultadoAnalise
+            {
+                NomeArquivo = $"SLLV",
+                Tentativa = i,
+                Lado = lado,
+                DiaColeta = dia,
+                AducaoQuadrilMax = maxAducaoQuadril,
+                FlexaoQuadrilMax = maxFlexaoQuadril,
+                RotacaoMedialQuadrilMax = maxRotacaoMedialQuadril,
+                FlexaoJoelhoMax = maxFlexaoJoelho
+            };
+            resultados.Add(resultado);
+        }
+
+        Console.WriteLine("🏁 Finalizado processamento SLLV.");
         return resultados;
     }
 
@@ -582,4 +772,5 @@ public class Analisador
             wb.SaveAs(caminhoArquivo);
         }
     }
+
 }
