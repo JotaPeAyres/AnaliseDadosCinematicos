@@ -519,7 +519,7 @@ public class Analisador
 
         if (arquivoMarcadores == null || arquivoCinematica == null)
         {
-            Console.WriteLine("⚠️ Arquivos de Marcadores ou Cinemática não encontrados SLLV SLDL.");
+            Console.WriteLine("⚠️ Arquivos de Marcadores ou Cinemática não encontrados para SLLV.");
             return new List<ResultadoAnalise>();
         }
 
@@ -538,7 +538,7 @@ public class Analisador
 
             if (planilhaC is null || planilhaM is null)
             {
-                Console.WriteLine(string.Format("Planilhas não encontradas na tentativa {0}", i));
+                Console.WriteLine(string.Format("⚠️ Planilhas de Marcadores ou Cinemática não encontradas na tentativa {0}", i));
                 continue;
             }
 
@@ -599,24 +599,24 @@ public class Analisador
 
             int janela = 5;
 
-            for (int ind = 1; ind < calcanharMarcador.Count - 1; ind++)
+            for (int index = 1; index < calcanharMarcador.Count - 1; index++)
             {
-                double valorAtual = calcanharMarcador[ind];
+                double valorAtual = calcanharMarcador[index];
 
                 // 1. Ultrapassa o limiar
                 if (valorAtual <= limiarCalcanhar)
                     continue;
 
                 // 2. Crescente em relação ao ponto anterior
-                if (valorAtual <= calcanharMarcador[ind - 1])
+                if (valorAtual <= calcanharMarcador[index - 1])
                     continue;
 
                 // 3. Verifica se é o maior nos próximos até 5 pontos
                 bool maiorNosProximos = true;
 
-                for (int j = 1; j <= janela && (ind + j) < calcanharMarcador.Count; j++)
+                for (int j = 1; j <= janela && (index + j) < calcanharMarcador.Count; j++)
                 {
-                    if (valorAtual <= calcanharMarcador[ind + j])
+                    if (valorAtual <= calcanharMarcador[index + j])
                     {
                         maiorNosProximos = false;
                         break;
@@ -625,7 +625,7 @@ public class Analisador
 
                 if (maiorNosProximos)
                 {
-                    pontoCorteCalcanhar = ind;
+                    pontoCorteCalcanhar = index;
                     break; // primeiro pico válido
                 }
             }
@@ -642,7 +642,7 @@ public class Analisador
 
             if (valoresDepoisDoMaximoPelve.Count == 0)
             {
-                Console.WriteLine($"Nenhum ponto de corte da pelve encontrado na tentativa {i}");
+                Console.WriteLine($"⚠️ Nenhum ponto de corte da pelve encontrado na tentativa {i}");
                 continue;
             }
 
@@ -655,7 +655,7 @@ public class Analisador
 
             #endregion Segundo ponto de corte
 
-            /// Garante que os índices estão dentro dos limites
+            // Garante que os índices estão dentro dos limites
             int inicio = Math.Max(0, pontoCorteCalcanhar);
             int fim = Math.Min(pelveCinematica.Count - 1, pontoCortePelve);
 
