@@ -30,8 +30,10 @@ public static class Constantes
         public const string SLDL = "SLDL";
         public const string SLHFD = "SLHFD";
         public const string SLLV = "SLLV";
+        public const string SLDJ = "SLDJ ";
+        public const string SLVJ = "SLVJ";
         
-        public static readonly string[] Todas = { SLDL, SLHFD, SLLV };
+        public static readonly string[] Todas = { SLDL, SLHFD, SLLV, SLDJ, SLVJ };
     }
     
     #endregion

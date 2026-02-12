@@ -1165,23 +1165,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jpayr\\.nuget\\packages\\": {},
+    "C:\\Users\\PC\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Projects\\AnalisarDados\\AnalisarDados\\AnalisarDados\\AnalisarDados.csproj",
+      "projectUniqueName": "C:\\ProjetosPessoais\\AnaliseDadosCinematicos\\AnalisarDados\\AnalisarDados\\AnalisarDados.csproj",
       "projectName": "AnalisarDados",
-      "projectPath": "C:\\Projects\\AnalisarDados\\AnalisarDados\\AnalisarDados\\AnalisarDados.csproj",
-      "packagesPath": "C:\\Users\\jpayr\\.nuget\\packages\\",
-      "outputPath": "C:\\Projects\\AnalisarDados\\AnalisarDados\\AnalisarDados\\obj\\",
+      "projectPath": "C:\\ProjetosPessoais\\AnaliseDadosCinematicos\\AnalisarDados\\AnalisarDados\\AnalisarDados.csproj",
+      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+      "outputPath": "C:\\ProjetosPessoais\\AnaliseDadosCinematicos\\AnalisarDados\\AnalisarDados\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\jpayr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1190,8 +1190,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {},
-        "https://linxfood.pkgs.visualstudio.com/_packaging/linxfood.nuget/nuget/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
@@ -1209,7 +1208,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net8.0": {
@@ -1244,7 +1243,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
