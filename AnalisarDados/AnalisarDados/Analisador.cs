@@ -733,7 +733,7 @@ public class Analisador
 
         if (arquivoMarcadores == null || arquivoCinematica == null)
         {
-            Console.WriteLine("⚠️ Arquivos de Marcadores ou Cinemática não encontrados para SLDJ .");
+            Console.WriteLine("⚠️ Arquivos de Marcadores ou Cinemática não encontrados para SLDJ.");
             return new List<ResultadoAnalise>();
         }
 

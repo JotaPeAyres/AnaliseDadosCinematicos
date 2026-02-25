@@ -1,6 +1,7 @@
 ﻿using AnalisarDados;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 
 namespace ValidadorExcel;
@@ -23,27 +24,48 @@ class Program
             return;
         }
 
-        var processor = new Analisador();
-        var resultados = processor.ProcessarTodosExcels(pastaRaiz);
+        var pastasID = Directory.GetDirectories(pastaRaiz, "ID_*")
+                                .OrderBy(p => p)
+                                .ToList();
 
-        var medias = processor.CalcularMedia(resultados);
-        string[] atividades = { "SLDL", "SLHFD", "SLLV" };
+        var analisador = new Analisador();
+        string[] atividades = Constantes.Atividades.Todas;
 
-        foreach (var atividade in atividades)
+        foreach (string pastaRaizId in pastasID)
         {
-            var resultadosAtividade = resultados
-               .Where(r => r.NomeArquivo.StartsWith(atividade))
-               .ToList();
+            string voluntarioId = Path.GetFileName(pastaRaizId);
 
-            var mediasAtividade = medias
-                .Where(m => m.NomeArquivo.StartsWith(atividade))
-                .ToList();
+            Console.WriteLine($"\n--- Processando: {voluntarioId} ---");
 
-            string arquivoSaida = Path.Combine(pastaRaiz, $"{atividade}_Resultados.xlsx");
-            processor.ExportarResultadosExcel(resultadosAtividade, mediasAtividade, arquivoSaida);
+            try
+            {
+                var resultados = analisador.ProcessarTodosExcels(pastaRaizId);
+                var medias = analisador.CalcularMedia(resultados);
+
+                foreach (var atividade in atividades)
+                {
+                    var resultadosAtividade = resultados
+                       .Where(r => r.NomeArquivo.StartsWith(atividade))
+                       .ToList();
+
+                    var mediasAtividade = medias
+                        .Where(m => m.NomeArquivo.StartsWith(atividade))
+                        .ToList();
+
+                    if (resultadosAtividade.Any())
+                    {
+                        string arquivoSaida = Path.Combine(pastaRaizId, $"{atividade}_Resultados_{voluntarioId}.xlsx");
+                        analisador.ExportarResultadosExcel(resultadosAtividade, mediasAtividade, arquivoSaida);
+                        Console.WriteLine($"[OK] {atividade} exportado.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO] Falha ao processar {voluntarioId}: {ex.Message}");
+            }
         }
 
-
-        Console.WriteLine($"\n✅ Validação concluída!");
+        Console.WriteLine($"\n✅ Processamento global concluído!");
     }
 }

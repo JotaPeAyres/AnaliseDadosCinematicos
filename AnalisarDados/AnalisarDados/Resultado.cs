@@ -11,6 +11,7 @@ public class Resultado
 public class ResultadoAnalise
 {
     public string NomeArquivo { get; set; } = "";
+    public int Id { get; set; }
     public int Tentativa { get; set; }
     public string Lado { get; set; } = "";
     public int DiaColeta { get; set; }
